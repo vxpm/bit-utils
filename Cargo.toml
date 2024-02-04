@@ -1,0 +1,15 @@
+[package]
+name = "bit-utils"
+version = "0.1.0"
+edition = "2021"
+authors = ["vxpm"]
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["bit", "bits", "util", "utils"]
+categories = ["no-std"]
+repository = "https://github.com/vxpm/bit-utils"
+
+[features]
+default = []
+assertions = []
+const_impl = []
