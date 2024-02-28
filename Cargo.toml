@@ -12,5 +12,4 @@ repository = "https://github.com/vxpm/bitut"
 
 [features]
 default = []
-assertions = []
 const_impl = []
