@@ -47,6 +47,14 @@ pub trait BitUtils: Sized + Copy + Shr<usize, Output = Self> + BitAnd<Self, Outp
     fn try_with_bits(self, start: u8, end: u8, value: Self) -> Option<Self>;
 }
 
+macro_rules! assume {
+    ($expr:expr) => {{
+        if !$expr {
+            core::hint::unreachable_unchecked()
+        }
+    }};
+}
+
 macro_rules! impl_bit_utils {
     (inner; $($constness:ident)? => $t:ty) => {
         impl $($constness)? BitUtils for $t {
@@ -111,7 +119,10 @@ macro_rules! impl_bit_utils {
                 let mask = shifted_one.wrapping_sub(ONE);
 
                 let shifted_value = self >> (start as usize);
-                shifted_value & mask
+                let result = shifted_value & mask;
+
+                unsafe { assume!(result <= mask) };
+                result
             }
 
             #[inline]
@@ -130,7 +141,10 @@ macro_rules! impl_bit_utils {
                 let mask = shifted_one.wrapping_sub(ONE);
 
                 let shifted_value = self >> (start as usize);
-                Some(shifted_value & mask)
+                let result = shifted_value & mask;
+
+                unsafe { assume!(result <= mask) };
+                Some(result)
             }
 
             #[inline]
