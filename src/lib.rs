@@ -5,7 +5,6 @@
 //! types. Allows getting/setting the value of a bit or a range of bits.
 //!
 //! # Features
-//! - `assertions`: adds debug assertions that verify valid indices.
 //! - `const_impl` (nightly only): makes [`BitUtils`] a const trait.
 
 use core::ops::{BitAnd, Shr};
