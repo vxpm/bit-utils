@@ -7,11 +7,9 @@
 //! # Features
 //! - `const_impl` (nightly only): makes [`BitUtils`] a const trait.
 
-use core::ops::{BitAnd, Shr};
-
 /// Provides methods for querying and modifying the value of specific bits. Convention is LSB0.
 #[cfg_attr(feature = "const_impl", const_trait)]
-pub trait BitUtils: Sized + Copy + Shr<usize, Output = Self> + BitAnd<Self, Output = Self> {
+pub trait BitUtils: Sized + Copy {
     /// Returns whether the bit at `index` is set or not. Indices out of range always return false.
     fn bit(self, index: u8) -> bool;
 
@@ -46,18 +44,10 @@ pub trait BitUtils: Sized + Copy + Shr<usize, Output = Self> + BitAnd<Self, Outp
     fn try_with_bits(self, start: u8, end: u8, value: Self) -> Option<Self>;
 }
 
-macro_rules! assume {
-    ($expr:expr) => {{
-        if !$expr {
-            core::hint::unreachable_unchecked()
-        }
-    }};
-}
-
 macro_rules! impl_bit_utils {
     (inner; $($constness:ident)? => $t:ty) => {
         impl $($constness)? BitUtils for $t {
-            #[inline]
+            #[inline(always)]
             fn bit(self, index: u8) -> bool {
                 let shifted = match self.checked_shr(index as u32) {
                     Some(x) => x,
@@ -67,7 +57,7 @@ macro_rules! impl_bit_utils {
                 (shifted & 1) > 0
             }
 
-            #[inline]
+            #[inline(always)]
             fn try_bit(self, index: u8) -> Option<bool> {
                 let shifted = self.checked_shr(index as u32);
                 match shifted {
@@ -76,7 +66,7 @@ macro_rules! impl_bit_utils {
                 }
             }
 
-            #[inline]
+            #[inline(always)]
             fn with_bit(self, index: u8, value: bool) -> Self {
                 const ONE: $t = 1;
 
@@ -89,7 +79,7 @@ macro_rules! impl_bit_utils {
                 (self & !shifted_one) | shifted_value
             }
 
-            #[inline]
+            #[inline(always)]
             fn try_with_bit(self, index: u8, value: bool) -> Option<Self> {
                 const ONE: $t = 1;
 
@@ -102,7 +92,7 @@ macro_rules! impl_bit_utils {
                 Some((self & !shifted_one) | shifted_value)
             }
 
-            #[inline]
+            #[inline(always)]
             fn bits(self, start: u8, end: u8) -> Self {
                 const ONE: $t = 1;
 
@@ -120,11 +110,11 @@ macro_rules! impl_bit_utils {
                 let shifted_value = self >> (start as usize);
                 let result = shifted_value & mask;
 
-                unsafe { assume!(result <= mask) };
+                unsafe { core::hint::assert_unchecked(result <= mask) };
                 result
             }
 
-            #[inline]
+            #[inline(always)]
             fn try_bits(self, start: u8, end: u8) -> Option<Self> {
                 const ONE: $t = 1;
 
@@ -142,11 +132,11 @@ macro_rules! impl_bit_utils {
                 let shifted_value = self >> (start as usize);
                 let result = shifted_value & mask;
 
-                unsafe { assume!(result <= mask) };
+                unsafe { core::hint::assert_unchecked(result <= mask) };
                 Some(result)
             }
 
-            #[inline]
+            #[inline(always)]
             fn with_bits(self, start: u8, end: u8, value: Self) -> Self {
                 const ONE: $t = 1;
 
@@ -168,7 +158,7 @@ macro_rules! impl_bit_utils {
                 (self & !shifted_mask) | shifted_value
             }
 
-            #[inline]
+            #[inline(always)]
             fn try_with_bits(self, start: u8, end: u8, value: Self) -> Option<Self> {
                 const ONE: $t = 1;
 
